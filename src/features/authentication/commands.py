@@ -9,6 +9,7 @@ from features.authentication.exc import UserNotFoundError
 from features.authentication.models.user import User
 from features.authentication.password_hashing import PasswordHashing
 from features.authentication.user_repo import UserRepository
+from utils.singleton import Singleton
 
 
 class UserCommand(abc.ABC):
@@ -41,7 +42,7 @@ class UserCreateCommand(DBUserCommand):
         return created_user_id
 
 
-class UserLoginCommand(DBUserCommand):
+class UserLoginCommand(DBUserCommand, Singleton):
     async def execute(self, payload: LoginAPIRequestModel) -> tuple[User, bool]:
         """
         Method authenticates user with password hash update

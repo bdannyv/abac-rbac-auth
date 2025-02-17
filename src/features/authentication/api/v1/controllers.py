@@ -8,6 +8,9 @@ from features.authentication.api.v1.schemas import (
     SignUpFormModel,
 )
 from features.authentication.commands import UserCreateCommand, UserLoginCommand
+from features.authentication.jwt_handler import JWTService
+from settings.auth import auth_settings
+from settings.base import app_settings
 
 authentication_router = APIRouter(prefix="/authentication", tags=["Authentication"])
 
@@ -26,22 +29,34 @@ def get_user_login_command(db_session: AsyncSession = Depends(...)):
         status.HTTP_401_UNAUTHORIZED: {"description": "Wrong credentials"},
     },
 )
-async def log_in(credentials: LoginAPIRequestModel, command: UserLoginCommand = Depends(get_user_login_command)):
+async def log_in(
+    credentials: LoginAPIRequestModel,
+    command: UserLoginCommand = Depends(get_user_login_command),
+    jwt_service: JWTService = Depends(JWTService),
+):
     user, is_authenticated = command.execute(payload=credentials)
     if not is_authenticated:
         raise exceptions.HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
 
-    # token_pair = ...
+    access, refresh = jwt_service.issue_token_pair(ent_id=user.id)
 
-    # return responses.ORJSONResponse(
-    #     status_code=status.HTTP_200_OK,
-    #     content={
-    #         "access": token_pair.access,
-    #         "refresh": token_pair.refresh
-    #     }
-    # )
+    response = responses.ORJSONResponse(
+        status_code=status.HTTP_200_OK,
+        content={
+            "access": access,
+        },
+    )
 
-    return responses.ORJSONResponse(status_code=status.HTTP_200_OK, content={"message": "Successfully authenticated"})
+    response.set_cookie(
+        key="refresh",
+        value=refresh,
+        httponly=True,
+        samesite="strict",
+        expires=auth_settings.jwt_refresh_ttl,
+        secure=app_settings.cookie_secure,
+    )
+
+    return response
 
 
 def get_user_create_command(db_session: AsyncSession = Depends(...)):
