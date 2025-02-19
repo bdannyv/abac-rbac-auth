@@ -12,9 +12,9 @@ from utils.singleton import Singleton
 class JWTToken(pydantic.BaseModel):
     ent_id: typing.Optional[uuid.UUID] = None
     jti: uuid.UUID = pydantic.Field(default_factory=uuid.uuid4)
-    iss: str = auth_settings.jwt_iss
+    iss: datetime = auth_settings.jwt_iss
     aud: tuple[str] = auth_settings.jwt_aud
-    exp: datetime
+    exp: typing.Annotated[datetime, pydantic.PlainSerializer(lambda x: x.timestamp())]
 
     def __post_init__(self):
         self.id = self.id or uuid.uuid4()
@@ -32,8 +32,13 @@ class JWTService(Singleton):
 
     @classmethod
     def encode(cls, exp: datetime, **data) -> str:
-        basic = JWTToken(**data)
+        basic = JWTToken(exp=exp, **data)
         payload = basic.model_dump()
         payload.update(data)
 
         return jwt.encode(payload=payload, key=auth_settings.jwt_key, algorithm=auth_settings.jwt_algo)
+
+    @staticmethod
+    def decode(token: str) -> JWTToken:
+        payload = jwt.decode(token)
+        return JWTToken(**payload)

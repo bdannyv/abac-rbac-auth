@@ -6,9 +6,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from features.authentication.api.v1.schemas import LoginAPIRequestModel, SignUpFormModel
 from features.authentication.exc import UserNotFoundError
+from features.authentication.jwt_service import JWTService
 from features.authentication.models.user import User
 from features.authentication.password_hashing import PasswordHashing
-from features.authentication.user_repo import UserRepository
+from features.authentication.repos.jwt_token import JwtTokenRepository
+from features.authentication.repos.user import UserRepository
 from utils.singleton import Singleton
 
 
@@ -58,3 +60,13 @@ class UserLoginCommand(DBUserCommand, Singleton):
         is_authenticated = PasswordHashing.verify_password(password=payload.password, hashed_password=user.password)
 
         return user, is_authenticated
+
+
+class UserLogoutCommand(UserCommand, Singleton):
+    jwt_repo = JwtTokenRepository()
+    jwt_serv = JWTService()
+
+    @classmethod
+    async def execute(cls, payload: str):
+        token = cls.jwt_serv.decode(payload)
+        await cls.jwt_repo.revoke_token(token)
