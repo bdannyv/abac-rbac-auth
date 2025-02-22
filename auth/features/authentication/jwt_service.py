@@ -4,7 +4,6 @@ from datetime import datetime
 
 import jwt
 import pydantic
-
 from settings.auth import auth_settings
 from utils.singleton import Singleton
 

@@ -2,8 +2,6 @@ import abc
 import typing
 import uuid
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from features.authentication.api.v1.schemas import LoginAPIRequestModel, SignUpFormModel
 from features.authentication.exc import UserNotFoundError
 from features.authentication.jwt_service import JWTService
@@ -11,10 +9,11 @@ from features.authentication.models.user import User
 from features.authentication.password_hashing import PasswordHashing
 from features.authentication.repos.jwt_token import JwtTokenRepository
 from features.authentication.repos.user import UserRepository
-from utils.singleton import Singleton
+from sqlalchemy.ext.asyncio import AsyncSession
+from utils.singleton import Singleton, SingletonMeta
 
 
-class UserCommand(abc.ABC):
+class UserCommand(metaclass=SingletonMeta):
     @abc.abstractmethod
     async def execute(self, payload: typing.Any):
         ...
@@ -30,7 +29,7 @@ class DBUserCommand(UserCommand):
         ...
 
 
-class UserCreateCommand(DBUserCommand):
+class UserCreateCommand(DBUserCommand, Singleton):
     async def execute(self, payload: SignUpFormModel) -> uuid.UUID:
         """
         Method creates a new user with its password hashing

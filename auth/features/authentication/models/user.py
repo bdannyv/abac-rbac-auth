@@ -1,10 +1,9 @@
-from sqlalchemy import UUID, VARCHAR, Boolean, Column, text
-
 from infra.data_storage import Base
+from sqlalchemy import UUID, VARCHAR, Boolean, Column, text
 
 
 class User(Base):
-    __table__ = "app_user"
+    __tablename__ = "app_user"
 
     id = Column(UUID(as_uuid=True), primary_key=True)
     first_name = Column(VARCHAR(32), nullable=False)

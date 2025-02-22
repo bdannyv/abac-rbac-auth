@@ -1,11 +1,10 @@
 import typing
 import uuid
 
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import InstrumentedAttribute
-
 from features.authentication.models.user import User
 from features.authentication.queries import delete_user_query, get_user_by_email, insert_user_query, update_user_query
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import InstrumentedAttribute
 
 
 class UserCreate(typing.Protocol):

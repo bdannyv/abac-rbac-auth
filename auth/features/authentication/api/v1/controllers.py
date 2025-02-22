@@ -2,26 +2,26 @@ import typing
 
 from fastapi import APIRouter, Depends, exceptions, responses, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from features.authentication.api.v1.schemas import LoginAPIRequestModel, SignedUPModel, SignUpFormModel
 from features.authentication.commands import UserCreateCommand, UserLoginCommand, UserLogoutCommand
 from features.authentication.jwt_service import JWTService
+from infra.data_storage import get_session
 from settings.auth import auth_settings
 from settings.base import app_settings
+from sqlalchemy.ext.asyncio import AsyncSession
 
 authentication_router = APIRouter(prefix="/authentication", tags=["Authentication"])
 
 
-def user_login_command_dependency(db_session: AsyncSession = Depends(...)):
+def user_login_command_dependency(db_session: AsyncSession = Depends(get_session)):
     return UserLoginCommand(session=db_session)
 
 
-def get_user_create_command_dependency(db_session: AsyncSession = Depends(...)):
+def get_user_create_command_dependency(db_session: AsyncSession = Depends(get_session)):
     return UserCreateCommand(session=db_session)
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="v1/authentication/login")
 
 
 @authentication_router.post(

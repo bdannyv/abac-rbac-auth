@@ -1,6 +1,6 @@
 import fastapi
-
 from features.authentication.api import authentication_domain_router, exception_handlers_map
+from settings.base import app_settings
 
 
 class ApplicationFactory:
@@ -8,7 +8,7 @@ class ApplicationFactory:
         self.app = None
 
     def init_app(self):
-        self.app = fastapi.FastAPI(title="Auth service")
+        self.app = fastapi.FastAPI(title=app_settings.app_name)
         return self
 
     def include_routers(self):
@@ -25,3 +25,8 @@ class ApplicationFactory:
 
 
 app = ApplicationFactory().init_app().include_routers().include_error_handlers().get_app()
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(app="app:app", reload=True)

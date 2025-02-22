@@ -1,10 +1,9 @@
 import typing
 
 from fastapi import APIRouter, HTTPException, status
-from jwt.exceptions import InvalidTokenError
-
 from features.authentication.api.v1.controllers import authentication_router
 from features.authentication.exc import UserNotFoundError
+from jwt.exceptions import InvalidTokenError
 
 authentication_domain_router = APIRouter(prefix="")
 

@@ -1,5 +1,4 @@
 from redis.asyncio import Redis
-
 from utils.singleton import Singleton, SingletonMeta
 
 
