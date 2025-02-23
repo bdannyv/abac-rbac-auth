@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 authentication_router = APIRouter(prefix="/authentication", tags=["Authentication"])
 
 
-def user_login_command_dependency(db_session: AsyncSession = Depends(get_session)):
+def user_login_command_dependency(db_session: AsyncSession = Depends(get_session)) -> UserLoginCommand:
     return UserLoginCommand(session=db_session)
 
 
@@ -36,11 +36,11 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="v1/authentication/login")
 )
 async def log_in(
     form_data: typing.Annotated[OAuth2PasswordRequestForm, Depends()],
-    command: UserLoginCommand = Depends(user_login_command_dependency),
-    jwt_service: JWTService = Depends(JWTService),
+    command: typing.Annotated[UserLoginCommand, Depends(user_login_command_dependency)],
+    jwt_service: typing.Annotated[JWTService, Depends(JWTService)],
 ):
-    user, is_authenticated = command.execute(
-        payload=LoginAPIRequestModel(email=form_data.username, password=form_data.username)
+    user, is_authenticated = await command.execute(
+        payload=LoginAPIRequestModel(email=form_data.username, password=form_data.password)
     )
 
     if not is_authenticated:

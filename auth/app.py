@@ -5,7 +5,7 @@ from settings.base import app_settings
 
 class ApplicationFactory:
     def __init__(self):
-        self.app = None
+        self.app: fastapi.FastAPI | None = None
 
     def init_app(self):
         self.app = fastapi.FastAPI(title=app_settings.app_name)
@@ -17,7 +17,7 @@ class ApplicationFactory:
 
     def include_error_handlers(self):
         for bl_error, api_error in exception_handlers_map:
-            self.app.exception_handler(bl_error)(api_error)
+            self.app.add_exception_handler(bl_error, api_error())
         return self
 
     def get_app(self):

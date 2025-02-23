@@ -10,10 +10,10 @@ from features.authentication.password_hashing import PasswordHashing
 from features.authentication.repos.jwt_token import JwtTokenRepository
 from features.authentication.repos.user import UserRepository
 from sqlalchemy.ext.asyncio import AsyncSession
-from utils.singleton import Singleton, SingletonMeta
+from utils.singleton import Singleton
 
 
-class UserCommand(metaclass=SingletonMeta):
+class UserCommand:
     @abc.abstractmethod
     async def execute(self, payload: typing.Any):
         ...
@@ -29,7 +29,7 @@ class DBUserCommand(UserCommand):
         ...
 
 
-class UserCreateCommand(DBUserCommand, Singleton):
+class UserCreateCommand(DBUserCommand):
     async def execute(self, payload: SignUpFormModel) -> uuid.UUID:
         """
         Method creates a new user with its password hashing
@@ -43,7 +43,7 @@ class UserCreateCommand(DBUserCommand, Singleton):
         return created_user_id
 
 
-class UserLoginCommand(DBUserCommand, Singleton):
+class UserLoginCommand(DBUserCommand):
     async def execute(self, payload: LoginAPIRequestModel) -> tuple[User, bool]:
         """
         Method authenticates user with password hash update

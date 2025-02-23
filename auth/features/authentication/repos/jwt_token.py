@@ -1,9 +1,11 @@
+from datetime import datetime
+
 from features.authentication.jwt_service import JWTToken
 from infra.cache_storage import RedisSingletonClient
-from utils.singleton import Singleton
+from utils.singleton import ParametrizedSingleton
 
 
-class JwtTokenRepository(Singleton):
+class JwtTokenRepository(ParametrizedSingleton):
     redis = RedisSingletonClient()
 
     @classmethod
@@ -14,7 +16,7 @@ class JwtTokenRepository(Singleton):
     @classmethod
     async def revoke_token(cls, token: JWTToken):
         async with cls.redis.pipeline() as pipeline:
-            await pipeline.hset(token.jti.urn, token.model_dump_json())
-            await pipeline.expire(token.jti.urn, time=token.exp - token.iss)
+            await pipeline.hset(token.jti.urn, mapping=token.model_dump(include={"ent_id"}, mode="json"))
+            await pipeline.expire(token.jti.urn, time=datetime.fromtimestamp(token.exp) - datetime.now())
 
             await pipeline.execute()

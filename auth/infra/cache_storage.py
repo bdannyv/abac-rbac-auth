@@ -1,11 +1,11 @@
 from redis.asyncio import Redis
-from utils.singleton import Singleton, SingletonMeta
+from utils.singleton import ParametrizedSingleton, ParametrizedSingletonMeta
 
 
-class RedisSingletonMeta(SingletonMeta, type(Redis)):
+class RedisParametrizedSingletonMeta(ParametrizedSingletonMeta, type(Redis)):
     # metaclass conflict resolver
     ...
 
 
-class RedisSingletonClient(Singleton, Redis, metaclass=RedisSingletonMeta):
+class RedisSingletonClient(ParametrizedSingleton, Redis, metaclass=RedisParametrizedSingletonMeta):
     ...

@@ -1,5 +1,3 @@
-import contextlib
-
 from settings.base import app_settings
 from sqlalchemy import URL, orm
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
@@ -22,7 +20,6 @@ engine: AsyncEngine = create_async_engine(url=DB_URL)
 session_maker: async_sessionmaker[AsyncSession] = async_sessionmaker(bind=engine)
 
 
-@contextlib.asynccontextmanager
 async def get_session():
     session = session_maker()
     try:

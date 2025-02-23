@@ -1,8 +1,10 @@
 import typing
 import uuid
 
+from features.authentication.exc import EmailAlreadyExists
 from features.authentication.models.user import User
 from features.authentication.queries import delete_user_query, get_user_by_email, insert_user_query, update_user_query
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import InstrumentedAttribute
 
@@ -31,8 +33,10 @@ class UserRepository:
                 "password": user_data.password,
             }
         )
-
-        stmt_res = await session.execute(stmt)
+        try:
+            stmt_res = await session.execute(stmt)
+        except IntegrityError:
+            raise EmailAlreadyExists
         return stmt_res.scalar()
 
     @staticmethod

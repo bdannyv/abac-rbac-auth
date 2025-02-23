@@ -9,5 +9,5 @@ class User(Base):
     first_name = Column(VARCHAR(32), nullable=False)
     last_name = Column(VARCHAR(64), nullable=False)
     email = Column(VARCHAR(320), nullable=True, unique=True)
-    password = Column(VARCHAR(64), nullable=False)
+    password = Column(VARCHAR(256), nullable=False)
     is_active = Column(Boolean, nullable=False, server_default=text("true"))

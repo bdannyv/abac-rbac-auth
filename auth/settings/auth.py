@@ -17,7 +17,7 @@ class AuthenticationSettings(BaseSettings):
         default=timedelta(days=10).total_seconds(), description="JWT token lifetime"
     )
     jwt_aud: typing.Optional[tuple[str]] = Field(default=("urn:user",), description="JWT token audience claim")
-    jwt_iss: typing.Optional[str] = f"urn:{app_settings}"
+    jwt_iss: typing.Optional[str] = f"urn:{app_settings.app_name}"
     jwt_key: str
     jwt_algo: str = Field(default="HS256")
 
