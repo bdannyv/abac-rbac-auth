@@ -1,4 +1,5 @@
 import functools
+import typing
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -9,6 +10,8 @@ class RedisSetting(BaseSettings):
     host_name: str
     port: int
     db: int
+    password: typing.Optional[str] = None
+    scheme: str
 
 
 @functools.cache

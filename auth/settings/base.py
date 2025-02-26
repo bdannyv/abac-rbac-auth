@@ -13,6 +13,7 @@ from settings.utils import load_dotenv
 class AppStage(enum.StrEnum):
     dev = "dev"
     prod = "prod"
+    test = "test"
 
 
 class AppSetting(BaseSettings):
@@ -29,7 +30,7 @@ class AppSetting(BaseSettings):
 
 @functools.cache
 def get_app_settings() -> AppSetting:
-    if os.environ.get("STAGE") == AppStage.dev.value:
+    if os.environ.get("STAGE") != AppStage.prod.value:
         load_dotenv()
 
     return AppSetting(storage=get_storage_settings(), cache=get_redis_settings())
