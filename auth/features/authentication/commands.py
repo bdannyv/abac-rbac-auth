@@ -62,10 +62,10 @@ class UserLoginCommand(DBUserCommand):
 
 
 class UserLogoutCommand(UserCommand, Singleton):
-    jwt_repo = JwtTokenRepository()
-    jwt_serv = JWTService()
+    jwt_repo: JwtTokenRepository = JwtTokenRepository()
+    jwt_serv: JWTService = JWTService()
 
     @classmethod
     async def execute(cls, payload: str):
         token = cls.jwt_serv.decode(payload)
-        await cls.jwt_repo.revoke_token(token)
+        await cls.jwt_repo.revoke_token(payload, exp=token.exp)

@@ -27,18 +27,23 @@ class JWTService(Singleton):
     @classmethod
     def issue_token_pair(
         cls, ent_id: uuid.UUID
-    ) -> tuple[typing.Annotated[str, "Access token"], typing.Annotated[str, "Refresh token"]]:
-        access = cls.encode(exp=auth_settings.jwt_access_ttl, ent_id=ent_id)
-        refresh = cls.encode(exp=auth_settings.jwt_refresh_ttl)
+    ) -> tuple[
+        typing.Annotated[str, "Access token"],
+        typing.Annotated[JWTToken, "Access token content"],
+        typing.Annotated[str, "Refresh token"],
+        typing.Annotated[JWTToken, "Refresh token content"],
+    ]:
+        access, access_content = cls.encode(exp=auth_settings.jwt_access_ttl, ent_id=ent_id)
+        refresh, refresh_content = cls.encode(exp=auth_settings.jwt_refresh_ttl)
 
-        return access, refresh
+        return access, access_content, refresh, refresh_content
 
     @classmethod
-    def encode(cls, exp: int, **data) -> str:
+    def encode(cls, exp: int, **data) -> tuple[str, JWTToken]:
         basic = JWTToken(exp=int(datetime.now().timestamp()) + exp, **data)
         payload = basic.model_dump(mode="json")
 
-        return jwt.encode(payload=payload, key=auth_settings.jwt_key, algorithm=auth_settings.jwt_algo)
+        return jwt.encode(payload=payload, key=auth_settings.jwt_key, algorithm=auth_settings.jwt_algo), basic
 
     @staticmethod
     def decode(token: str) -> JWTToken:

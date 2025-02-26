@@ -14,9 +14,5 @@ class JwtTokenRepository(ParametrizedSingleton):
         return revoked is not None
 
     @classmethod
-    async def revoke_token(cls, token: JWTToken):
-        async with cls.redis.pipeline() as pipeline:
-            await pipeline.hset(token.jti.urn, mapping=token.model_dump(include={"ent_id"}, mode="json"))
-            await pipeline.expire(token.jti.urn, time=datetime.fromtimestamp(token.exp) - datetime.now())
-
-            await pipeline.execute()
+    async def revoke_token(cls, token: str, exp: int):
+        await cls.redis.set(name=token, value=exp, ex=datetime.fromtimestamp(exp) - datetime.now())

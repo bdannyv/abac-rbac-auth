@@ -5,6 +5,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from features.authentication.api.v1.schemas import LoginAPIRequestModel, SignedUPModel, SignUpFormModel
 from features.authentication.commands import UserCreateCommand, UserLoginCommand, UserLogoutCommand
 from features.authentication.jwt_service import JWTService
+from features.utils import ACCESS_TOKEN_COOKIE_NAME, REFRESH_TOKEN_COOKIE_NAME, access_token_cookie
 from infra.data_storage import get_session
 from settings.auth import auth_settings
 from settings.base import app_settings
@@ -46,18 +47,28 @@ async def log_in(
     if not is_authenticated:
         raise exceptions.HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
 
-    access, refresh = jwt_service.issue_token_pair(ent_id=user.id)
+    access, access_content, refresh, refresh_content = jwt_service.issue_token_pair(ent_id=user.id)
 
     response = responses.ORJSONResponse(
-        status_code=status.HTTP_200_OK, content={"access_token": access, "token_type": "bearer"}
+        status_code=status.HTTP_200_OK,
+        content={"message": "Success"},  # "access_token": access, "token_type": "bearer"}
     )
 
     response.set_cookie(
-        key="refresh_token",
+        key=REFRESH_TOKEN_COOKIE_NAME,
         value=refresh,
         httponly=True,
-        samesite="strict",
+        samesite="lax",
         expires=auth_settings.jwt_refresh_ttl,
+        secure=app_settings.cookie_secure,
+    )
+
+    response.set_cookie(
+        key=ACCESS_TOKEN_COOKIE_NAME,
+        value=access,
+        httponly=True,
+        samesite="lax",
+        expires=auth_settings.jwt_access_ttl,
         secure=app_settings.cookie_secure,
     )
 
@@ -83,7 +94,9 @@ async def sign_up(
     responses={status.HTTP_308_PERMANENT_REDIRECT: {"description": "Successfully logged out"}},
 )
 async def log_out(
-    token: typing.Annotated[str, Depends(oauth2_scheme)], command: UserLogoutCommand = Depends(UserLogoutCommand)
+    token: typing.Annotated[str, Depends(access_token_cookie)],
+    _: typing.Annotated[str, Depends(oauth2_scheme)],  # to see authorize button on Swagger (for dev purposes)
+    command: UserLogoutCommand = Depends(UserLogoutCommand),
 ):
     await command.execute(token)
     return responses.ORJSONResponse(status_code=status.HTTP_200_OK, content="Successfully logged out")
