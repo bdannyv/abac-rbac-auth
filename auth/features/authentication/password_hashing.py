@@ -1,5 +1,5 @@
 import argon2
-from argon2.exceptions import VerifyMismatchError
+from argon2.exceptions import Argon2Error, InvalidHashError
 from argon2.profiles import RFC_9106_HIGH_MEMORY
 
 
@@ -22,7 +22,7 @@ class PasswordHashing:
     def verify_password(cls, password: str, hashed_password: str) -> bool:
         try:
             cls.password_hasher.verify(hashed_password, password)
-        except VerifyMismatchError:
+        except (Argon2Error, InvalidHashError):
             return False
         else:
             return True

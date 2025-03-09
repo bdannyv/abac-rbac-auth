@@ -1,5 +1,5 @@
 from fastapi import HTTPException, Request, status
-from infra.cache_storage import RedisCacheClient
+from infra.cache_storage import CacheStorageFactory
 from utils.singleton import Singleton
 
 REFRESH_TOKEN_COOKIE_NAME = "refresh_token"
@@ -7,7 +7,7 @@ ACCESS_TOKEN_COOKIE_NAME = "access_token"
 
 
 class AccessTokenDependency(Singleton):
-    redis_client = RedisCacheClient()
+    redis_client = CacheStorageFactory.get_cache_client()
 
     async def __call__(self, request: Request) -> str:
         token = request.cookies.get(ACCESS_TOKEN_COOKIE_NAME)

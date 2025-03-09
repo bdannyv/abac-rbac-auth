@@ -12,3 +12,9 @@ class EmailAlreadyExists(AuthenticationCommandError):
     def __init__(self):
         self.msg = "Email is already registered"
         super().__init__(self.msg)
+
+
+class UnknownUserColumn(AuthenticationCommandError):
+    def __init__(self):
+        self.msg = "Used data do not correspond to application model"
+        super().__init__(self.msg)

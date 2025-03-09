@@ -1,10 +1,10 @@
 import typing
 import uuid
 
-from features.authentication.exc import EmailAlreadyExists
+from features.authentication.exc import EmailAlreadyExists, UnknownUserColumn
 from features.authentication.models.user import User
 from features.authentication.queries import delete_user_query, get_user_by_email, insert_user_query, update_user_query
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import CompileError, IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import InstrumentedAttribute
 
@@ -44,7 +44,10 @@ class UserRepository:
         id_: uuid.UUID, user_data: dict[str | InstrumentedAttribute, typing.Any], session: AsyncSession
     ) -> uuid.UUID | None:
         stmt = update_user_query(id_=id_, to_update=user_data)
-        stmt_res = await session.execute(stmt)
+        try:
+            stmt_res = await session.execute(stmt)
+        except CompileError:
+            raise UnknownUserColumn
         return stmt_res.scalar()
 
     @staticmethod

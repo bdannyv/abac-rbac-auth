@@ -1,6 +1,5 @@
 import datetime
 
-import pytest
 import pytest_asyncio
 from features.authentication.repos.jwt_token import JwtTokenRepository
 from infra.cache_storage import CacheStorageFactory
@@ -13,14 +12,12 @@ async def token_repo():
     JwtTokenRepository.cache = CacheStorageFactory.get_new_cache_client()
 
 
-@pytest.mark.asyncio
 async def test_token_hasnt_been_revoked(encoded_token, token_repo):
     encoded_token, _ = encoded_token
     revoked = await token_repo.is_token_revoked(encoded_token)
     assert revoked is False
 
 
-@pytest.mark.asyncio
 async def test_token_revoking(encoded_token, token_repo):
     encoded_token, _ = encoded_token
     expires = int((datetime.datetime.now() + datetime.timedelta(minutes=1)).timestamp())
