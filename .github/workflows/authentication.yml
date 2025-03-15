@@ -1,0 +1,133 @@
+name: Authentication CI
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+      - release/**
+  pull_request:
+    branches:
+      - main
+      - dev
+
+run-name: Testing changes made by ${{ github.actor }} before merging into ${{ github.ref_name }} 🧪
+
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 pytest
+      - name: Lint with flake8
+        run: |
+          # stop the build if there are Python syntax errors or undefined names
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+  test:
+    needs: lint
+
+    name: Build image and run tests
+    runs-on: ubuntu-22.04
+
+    env:
+      DOCKER_NETWORK: "auth-test-network"
+      APP_IMAGE: "auth-service-test-image"
+      APP_CONTAINER: "auth-service-test-container"
+      POSTGRES_USER: "test_user"
+      POSTGRES_HOST: "postgres"
+      POSTGRES_PASSWORD: "test_password"
+      POSTGRES_DB: "test_db"
+      POSTGRES_PORT: 5432
+      POSTGRES_CONTAINER: "test-db-container"
+      AUTH_JWT_KEY: "jwt-test-secret"
+      REDIS_DB: 0
+      REDIS_HOST: "redis"
+      REDIS_PORT: 6379
+      REDIS_CONTAINER: "test-cache-container"
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Build image
+        run: |
+          docker build . \
+            --file deploy/auth-test.Dockerfile \
+            -t $APP_IMAGE
+
+      - name: Create docker network
+        run: |
+          docker network create $DOCKER_NETWORK
+
+      - name: Run test database
+        run: |
+          docker run -d \
+            --name postgres \
+            --network $DOCKER_NETWORK \
+            --hostname $POSTGRES_HOST \
+            -e POSTGRES_USER=$POSTGRES_USER \
+            -e POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
+            -e POSTGRES_DB=$POSTGRES_DB \
+            -p $POSTGRES_PORT:5432 \
+            --name $POSTGRES_CONTAINER \
+            --health-cmd="pg_isready -U $POSTGRES_USER" \
+            --health-interval=10s \
+            --health-timeout=5s \
+            --health-retries=5 \
+            postgres:17
+
+      - name: Run cache
+        run: |
+          docker run -d \
+            --name redis \
+            --network $DOCKER_NETWORK \
+            --hostname $REDIS_HOST \
+            -p $REDIS_PORT:6379 \
+            --name $REDIS_CONTAINER \
+            --health-cmd="redis-cli ping" \
+            --health-interval=10s \
+            --health-timeout=5s \
+            redis:7
+
+      - name: Run tests
+        run: |
+          docker run \
+            --network $DOCKER_NETWORK \
+            -e POSTGRES_DB=$POSTGRES_DB \
+            -e POSTGRES_USER=$POSTGRES_USER \
+            -e POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
+            -e POSTGRES_HOST=$POSTGRES_HOST \
+            -e POSTGRES_HOST_NAME=$POSTGRES_HOST \
+            -e POSTGRES_PORT=$POSTGRES_PORT \
+            -e AUTH_JWT_KEY=$AUTH_JWT_KEY \
+            -e REDIS_DB=$REDIS_DB \
+            -e REDIS_HOST=$REDIS_HOST \
+            -e REDIS_HOST_NAME=$REDIS_HOST \
+            -e REDIS_PORT=$REDIS_PORT \
+            --name $APP_CONTAINER \
+            $APP_IMAGE
+
+      - name: Stop test container
+        run: |
+          docker stop $APP_CONTAINER \
+            && docker stop $POSTGRES_CONTAINER \
+            && docker stop $REDIS_CONTAINER \
+            && docker rm $APP_CONTAINER \
+            && docker rm $POSTGRES_CONTAINER \
+            && docker rm $REDIS_CONTAINER \
+            && docker image rm -f $APP_IMAGE \
+            && docker network rm $DOCKER_NETWORK

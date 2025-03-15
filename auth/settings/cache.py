@@ -11,7 +11,6 @@ class RedisSetting(BaseSettings):
     port: int
     db: int
     password: typing.Optional[str] = None
-    scheme: str
 
 
 @functools.cache
