@@ -5,10 +5,10 @@ import uuid
 from features.authentication.api.v1.schemas import LoginAPIRequestModel, SignUpFormModel
 from features.authentication.exc import UserNotFoundError
 from features.authentication.jwt_service import JWTService
-from features.authentication.models.user import User
 from features.authentication.password_hashing import PasswordHashing
 from features.authentication.repos.jwt_token import JwtTokenRepository
 from features.authentication.repos.user import UserRepository
+from models.user import User
 from sqlalchemy.ext.asyncio import AsyncSession
 from utils.singleton import Singleton
 

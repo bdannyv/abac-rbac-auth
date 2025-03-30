@@ -3,8 +3,8 @@ import uuid
 import pytest
 from features.authentication.api.v1.schemas import SignUpFormModel
 from features.authentication.exc import EmailAlreadyExists, UnknownUserColumn
-from features.authentication.models.user import User
 from features.authentication.repos.user import UserRepository
+from models.user import User
 from sqlalchemy.ext.asyncio import AsyncSession
 
 

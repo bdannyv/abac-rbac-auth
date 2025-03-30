@@ -4,7 +4,7 @@ import factory
 from factory.alchemy import SQLAlchemyModelFactory
 
 # Update the import as needed if your User model is in a different module.
-from features.authentication.models.user import User
+from models.user import User
 
 
 class UserFactory(SQLAlchemyModelFactory):

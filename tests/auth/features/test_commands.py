@@ -31,7 +31,7 @@ class TestUserCreateCommand:
         mock_hash.assert_called_once_with(password=user_create_form_init.password)
 
         # Verify user was created in DB
-        from features.authentication.models.user import User
+        from models.user import User
 
         user = await db_session.get(User, user_create_form.id)
         assert user is not None

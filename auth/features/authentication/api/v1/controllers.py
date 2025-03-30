@@ -1,12 +1,12 @@
 import typing
 
+from core.data_storage import get_session
 from fastapi import APIRouter, Depends, exceptions, responses, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from features.authentication.api.v1.schemas import LoginAPIRequestModel, SignedUPModel, SignUpFormModel
 from features.authentication.commands import UserCreateCommand, UserLoginCommand, UserLogoutCommand
 from features.authentication.jwt_service import JWTService
 from features.utils import ACCESS_TOKEN_COOKIE_NAME, REFRESH_TOKEN_COOKIE_NAME, access_token_cookie
-from infra.data_storage import get_session
 from settings.auth import auth_settings
 from settings.base import app_settings
 from sqlalchemy.ext.asyncio import AsyncSession

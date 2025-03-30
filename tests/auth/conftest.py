@@ -4,10 +4,10 @@ import uuid
 import factory
 import pytest
 import pytest_asyncio
+from core.data_storage import DB_URL
 from factory import Factory
 from features.authentication.api.v1.schemas import SignUpFormModel
 from features.authentication.jwt_service import JWTService, JWTToken
-from infra.data_storage import DB_URL
 from settings.auth import auth_settings
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
 

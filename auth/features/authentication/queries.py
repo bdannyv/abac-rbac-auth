@@ -2,7 +2,7 @@ import typing
 import uuid
 
 import sqlalchemy as sa
-from features.authentication.models.user import User
+from models.user import User
 from sqlalchemy import Select
 from sqlalchemy.orm import InstrumentedAttribute
 from sqlalchemy.sql.dml import ReturningDelete, ReturningInsert, ReturningUpdate

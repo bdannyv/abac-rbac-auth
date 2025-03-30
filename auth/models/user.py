@@ -1,4 +1,4 @@
-from infra.data_storage import Base
+from core.data_storage import Base
 from sqlalchemy import UUID, VARCHAR, Boolean, Column, text
 
 

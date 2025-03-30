@@ -1,8 +1,8 @@
 import datetime
 
 import pytest_asyncio
+from core.cache_storage import CacheStorageFactory
 from features.authentication.repos.jwt_token import JwtTokenRepository
-from infra.cache_storage import CacheStorageFactory
 
 
 @pytest_asyncio.fixture(scope="function")

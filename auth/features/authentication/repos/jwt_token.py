@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from infra.cache_storage import CacheStorage, CacheStorageFactory
+from core.cache_storage import CacheStorage, CacheStorageFactory
 from utils.singleton import ParametrizedSingleton
 
 

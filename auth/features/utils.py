@@ -1,5 +1,5 @@
+from core.cache_storage import CacheStorageFactory
 from fastapi import HTTPException, Request, status
-from infra.cache_storage import CacheStorageFactory
 from utils.singleton import Singleton
 
 REFRESH_TOKEN_COOKIE_NAME = "refresh_token"
