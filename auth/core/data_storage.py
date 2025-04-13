@@ -1,3 +1,5 @@
+import contextlib
+
 from settings.base import app_settings
 from sqlalchemy import URL, orm
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
@@ -21,6 +23,20 @@ session_maker: async_sessionmaker[AsyncSession] = async_sessionmaker(bind=engine
 
 
 async def get_session():
+    session = session_maker()
+    try:
+        yield session
+    except Exception as e:
+        await session.rollback()
+        raise e
+    else:
+        await session.commit()
+    finally:
+        await session.close()
+
+
+@contextlib.asynccontextmanager
+async def session_factory():
     session = session_maker()
     try:
         yield session

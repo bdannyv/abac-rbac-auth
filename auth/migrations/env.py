@@ -4,7 +4,8 @@ import pathlib
 from logging.config import fileConfig
 
 from alembic import context
-from models_registry import DB_URL, Base, engine
+from core.data_storage import DB_URL, engine
+from models import Base
 
 if os.environ.get("STAGE") == "dev":
     import dotenv

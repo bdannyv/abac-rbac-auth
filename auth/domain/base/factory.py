@@ -1,10 +1,13 @@
 import abc
 import typing
 
+from domain.base.command import DomainCommand
+
 T = typing.TypeVar("T")
 
 
 class AggregateFactory(abc.ABC, typing.Generic[T]):
+    @classmethod
     @abc.abstractmethod
-    def create(self, *args, **kwargs) -> T:
+    async def create(cls, creation_command: DomainCommand) -> T:
         pass

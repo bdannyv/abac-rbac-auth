@@ -1,5 +1,6 @@
 import fastapi
-from features.authentication.api import authentication_domain_router, exception_handlers_map
+from api import base_router
+from api.v1.authentication.exception import exception_handlers_map
 from settings.base import app_settings
 
 
@@ -12,12 +13,12 @@ class ApplicationFactory:
         return self
 
     def include_routers(self):
-        self.app.include_router(authentication_domain_router)
+        self.app.include_router(base_router)
         return self
 
     def include_error_handlers(self):
-        for bl_error, api_error in exception_handlers_map:
-            self.app.add_exception_handler(bl_error, api_error())
+        for error, api_error in exception_handlers_map:
+            self.app.add_exception_handler(error, api_error())
         return self
 
     def get_app(self):

@@ -1,32 +1,103 @@
 import abc
-import dataclasses
 import datetime
-import typing
 import uuid
+
+from pydantic import BaseModel, Field
 
 
 class EventBase(abc.ABC):
-    def get_type(self):
-        return self.__class__
+    id: uuid.UUID = Field(default_factory=uuid.uuid4)
+
+    @classmethod
+    def get_type(cls):
+        return cls.__name__
 
 
-@dataclasses.dataclass
-class EventCausation:
-    causation_type: type[EventBase]
-    causation_id: typing.Any
+class DomainEvent(BaseModel):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4)
 
-
-@dataclasses.dataclass
-class Event(EventBase):
-    id: uuid.UUID
-    event_type: type[EventBase]
-    event_version: int
+    event_type: str
     event_data: dict
 
     aggregate_id: uuid.UUID
     aggregate_type: str
+    aggregate_version: int
 
     correlation_id: uuid.UUID
-    causation: EventCausation
+    causation_type: str
+    causation_id: uuid.UUID
 
-    timestamp: datetime.datetime = dataclasses.field(default_factory=datetime.datetime.now)
+    created_at: datetime.datetime = Field(default_factory=datetime.datetime.now)
+
+    def meta_dict(self):
+        return self.model_dump(
+            mode="json",
+            include={
+                "event_type",
+                "event_data",
+                "aggregate_id",
+                "aggregate_type",
+                "aggregate_version",
+                "correlation_id",
+                "causation_type",
+                "causation_id",
+                "created_at",
+            },
+        )
+
+    def meta_json(self):
+        return self.model_dump(
+            include={
+                "event_type",
+                "event_data",
+                "aggregate_id",
+                "aggregate_type",
+                "aggregate_version",
+                "correlation_id",
+                "causation_type",
+                "causation_id",
+                "created_at",
+            }
+        )
+
+    def data_dict(self):
+        return self.model_dump(
+            mode="json",
+            exclude={
+                "event_type",
+                "event_data",
+                "aggregate_id",
+                "aggregate_type",
+                "aggregate_version",
+                "correlation_id",
+                "causation_type",
+                "causation_id",
+                "created_at",
+            },
+        )
+
+    def data_json(self):
+        return self.model_dump_json(
+            exclude={
+                "event_type",
+                "event_data",
+                "aggregate_id",
+                "aggregate_type",
+                "aggregate_version",
+                "correlation_id",
+                "causation_type",
+                "causation_id",
+                "created_at",
+            }
+        )
+
+    def db_model_dict(self) -> dict:
+        return self.model_dump()
+
+    @classmethod
+    def get_type(cls):
+        return cls
+
+    @classmethod
+    def get_type_str(cls):
+        return cls.__name__
