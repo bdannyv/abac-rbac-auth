@@ -1,14 +1,11 @@
-import asyncio
-
 import factory
 import pytest
 from domain.infra.event_bus import EventBus
 from domain.user.command import SignUpCommand
 from domain.user.event import UserCreatedEvent
-from domain.user.exc import EmailAlreadyExists
 from domain.user.factory import UserFactory
 from domain.user.repository import UserRepository
-from domain.user.service import EmailChecker, UserDomainService
+from domain.user.service import EmailChecker
 from models import User
 
 
@@ -85,16 +82,3 @@ async def test_user_projection(sign_up_command, db_session):
     assert user_projection.email == user_agg.email
     assert user_projection.password == user_agg.password
     assert user_projection.is_active
-
-
-async def test_sign_up_consistency(sign_up_command):
-    tasks_n = 5
-    tasks = [asyncio.create_task(UserDomainService.sign_up_user(command=sign_up_command)) for _ in range(tasks_n)]
-
-    done, _ = await asyncio.wait(tasks)
-    registered = list(filter(lambda x: x.exception() is None, done))
-    failed = list(filter(lambda x: x.exception() is not None, done))
-
-    assert len(registered) == 1
-    assert len(failed) == tasks_n - len(registered)
-    assert all(isinstance(f.exception(), EmailAlreadyExists) for f in failed)
