@@ -2,7 +2,7 @@ import abc
 import datetime
 import uuid
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class EventBase(abc.ABC):
@@ -14,6 +14,8 @@ class EventBase(abc.ABC):
 
 
 class DomainEvent(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: uuid.UUID = Field(default_factory=uuid.uuid4)
 
     event_type: str

@@ -13,12 +13,17 @@ class UserAggregate(Aggregate):
     login: typing.Optional[str] = None
     password: typing.Optional[str] = None
 
-    async def _apply_user_created_event(self, event: UserCreatedEvent):
+    async def apply_user_created_event(self, event: UserCreatedEvent):
         self.first_name = event.event_data.first_name
         self.last_name = event.event_data.last_name
         self.email = event.event_data.email
         self.login = event.event_data.login
         self.password = event.event_data.password
+        self.id = event.aggregate_id
+        self.created_at = event.created_at
 
     def __post_init__(self):
-        self._application_map = {UserCreatedEvent: self._apply_user_created_event}
+        self._application_map = application_map
+
+
+application_map = {UserCreatedEvent.get_type_str(): UserAggregate.apply_user_created_event}

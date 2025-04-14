@@ -16,7 +16,8 @@ T = typing.TypeVar("T", bound=DomainEvent)
 
 
 class AggregateEventHandler(typing.Protocol):
-    async def __call__(self, event: T) -> None:
+    @staticmethod
+    async def __call__(instance, event: T) -> None:
         ...
 
 
@@ -27,7 +28,7 @@ class Aggregate:
     created_at: datetime.datetime = dataclasses.field(default_factory=datetime.datetime.now)
 
     uncommitted_events: list[DomainEvent] = dataclasses.field(default_factory=list)
-    _application_map: dict[type[T], AggregateEventHandler] = dataclasses.field(default_factory=dict)
+    _application_map: dict[str, AggregateEventHandler] = dataclasses.field(default_factory=dict)
 
     def __enter__(self):
         return self
@@ -42,8 +43,7 @@ class Aggregate:
         return cls.__name__
 
     def get_version_increment(self):
-        self.version += 1
-        return self.version
+        return self.version + 1
 
     def record_event(self, event: DomainEvent):
         self.uncommitted_events.append(event)
@@ -55,16 +55,15 @@ class Aggregate:
         self.uncommitted_events = []
 
     async def apply(self, event: DomainEvent) -> typing.Self:
-        handler = self._application_map.get(event.get_type())
+        handler = self._application_map.get(event.event_type)
         if handler is None:
             raise AggregateHasNoEventHandler(self, event)
-
-        await handler(event)
+        await handler(self, event)
+        self.version += 1
 
     @classmethod
     async def load_from_history(cls, events: typing.Iterable[DomainEvent]) -> "Aggregate":
         aggregate = cls()
-
         await cls.hydrate(aggregate, events)
 
         return aggregate

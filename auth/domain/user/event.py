@@ -24,5 +24,12 @@ class UserCreationForm(BaseModel):
         )
 
 
-class UserCreatedEvent(DomainEvent):
+class UserDomainEvent(DomainEvent):
+    pass
+
+
+class UserCreatedEvent(UserDomainEvent):
     event_data: UserCreationForm
+
+
+user_event_repo: dict[str, type[UserDomainEvent]] = {UserCreatedEvent.get_type_str(): UserCreatedEvent}

@@ -10,7 +10,6 @@ from models.user import User
 class UserFactory(SQLAlchemyModelFactory):
     class Meta:
         model = User
-        sqlalchemy_session_persistence = "commit"
 
     id = factory.LazyFunction(uuid4)
     first_name = factory.Faker("first_name")

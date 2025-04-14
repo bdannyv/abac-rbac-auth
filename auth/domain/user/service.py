@@ -2,6 +2,7 @@ import functools
 
 from core.data_storage import session_factory
 from domain.infra.event_bus import EventBus
+from domain.infra.utils import pg_advisory_lock
 from domain.user.aggregate import UserAggregate
 from domain.user.command import SignUpCommand
 from domain.user.exc import EmailAlreadyExists
@@ -41,6 +42,7 @@ class UserDomainService:
         async with session_factory() as session:
             async with session.begin_nested():
                 # within transaction actions with provided email are locked with query below
+                await pg_advisory_lock(session=session, value=command.email_str)
                 exists = await EmailChecker.email_exists(session=session, email=command.email_str)
                 if exists:
                     raise EmailAlreadyExists(email=command.email_str)
