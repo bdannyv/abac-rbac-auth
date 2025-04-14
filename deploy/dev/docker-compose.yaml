@@ -1,0 +1,29 @@
+services:
+  db:
+    image: postgres:17.4-alpine3.21
+    volumes:
+      - verification_db_dev_verify:/var/lib/postgresql/data
+    hostname: ${POSTGRES_HOST}
+    env_file:
+      - .env
+    ports:
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+    expose:
+      - ${POSTGRES_PORT}
+    command:
+      -p ${POSTGRES_PORT}
+
+  cache:
+    image: redis:8.0-M03-alpine
+    hostname: ${REDIS_HOST}
+    ports:
+      - "${REDIS_PORT}:6379"
+    volumes:
+      - redis_dev_verify:/data
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+
+
+
+volumes:
+  verification_db_dev_verify:
+  redis_dev_verify:
