@@ -32,4 +32,11 @@ class UserCreatedEvent(UserDomainEvent):
     event_data: UserCreationForm
 
 
-user_event_repo: dict[str, type[UserDomainEvent]] = {UserCreatedEvent.get_type_str(): UserCreatedEvent}
+class UserSignedInEvent(UserDomainEvent):
+    pass
+
+
+user_event_repo: dict[str, type[UserDomainEvent]] = {
+    UserCreatedEvent.get_type_str(): UserCreatedEvent,
+    UserSignedInEvent.get_type_str(): UserSignedInEvent,
+}

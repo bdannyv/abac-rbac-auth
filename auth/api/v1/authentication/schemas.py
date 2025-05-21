@@ -21,3 +21,14 @@ class SignUpOutput(BaseModel):
     last_name: str
     email: str
     login: str
+
+
+class SignInInput(BaseModel):
+    login: str
+    password: str
+
+
+class SignInOutput(BaseModel):
+    id: uuid.UUID
+    login: str
+    token: str

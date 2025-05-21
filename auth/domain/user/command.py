@@ -20,3 +20,12 @@ class SignUpCommand(DomainCommand):
     @classmethod
     def get_type(cls) -> str:
         return cls.__name__
+
+
+class SignInCommand(DomainCommand):
+    login: str
+    password: Password
+
+    @classmethod
+    def get_type(cls) -> str:
+        return cls.__name__

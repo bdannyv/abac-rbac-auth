@@ -1,7 +1,10 @@
-from api.v1.authentication.schemas import SignUpInput, SignUpOutput
-from domain.user.command import SignUpCommand
+from api.v1.authentication.schemas import SignInInput, SignInOutput, SignUpInput, SignUpOutput
+from auth.core.security import create_access_token
+from domain.user.command import SignInCommand, SignUpCommand
+from domain.user.exc import InvalidPassword, UserNotFound
+from domain.user.password import Password
 from domain.user.service import UserDomainService, user_service_factory
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from fastapi.params import Depends
 
 authentication = APIRouter(prefix="/authentication")
@@ -42,3 +45,40 @@ async def sign_up(sign_up_data: SignUpInput, user_service: UserDomainService = D
         email=new_user.email,
         login=new_user.login,
     )
+
+
+@authentication.post("/sign-in", response_model=SignInOutput)
+async def sign_in(sign_in_data: SignInInput, user_service: UserDomainService = Depends(user_service_factory)):
+    """
+    Handles the sign-in process for existing users.
+
+    __sign_in_data__: Contains the login and password provided by the user.
+    _sign_in_data_: SignInInput
+
+    __user_service__: A dependency-injected domain service responsible for handling user-related operations.
+    _user_service_: UserDomainService
+
+    __return__: An object containing the user's ID and login upon successful authentication.
+    _return_: SignInOutput
+
+    __raises__:
+        - HTTPException 404: If the user with the provided login is not found.
+        - HTTPException 401: If the provided password is invalid.
+    """
+    command = SignInCommand(
+        login=sign_in_data.login,
+        password=Password(hashed=sign_in_data.password, is_hashed=False),  # Password will be hashed on init
+    )
+
+    try:
+        user = await user_service.sign_in_user(command)
+    except UserNotFound:
+        raise HTTPException(status_code=404, detail="User not found")
+    except InvalidPassword:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    # Create JWT token
+    # The create_access_token function uses the configured expiry time by default
+    access_token = create_access_token(data={"sub": user.login})
+
+    return SignInOutput(id=user.id, login=user.login, token=access_token)
